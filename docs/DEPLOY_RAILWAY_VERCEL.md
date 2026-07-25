@@ -4,7 +4,8 @@ Esta é a divisão recomendada quando você quer sua própria IA rodando (Ollama
 sem depender de OpenAI/Groq) e ainda assim ter o site acessível na internet:
 
 - **Vercel**: só o `frontend` (Next.js). Serverless, rápido, grátis no plano hobby.
-- **Railway**: `backend` (FastAPI) + `ollama` (o modelo) + `postgres` (pgvector) + `redis`.
+- **Supabase**: banco Postgres com pgvector (projeto `orbit-ia`, já criado e com a extensão habilitada).
+- **Railway**: `backend` (FastAPI) + `ollama` (o modelo) + `redis`.
   Precisa ser um servidor sempre ligado — por isso não pode ser a Vercel.
 
 ```
@@ -14,30 +15,33 @@ sem depender de OpenAI/Groq) e ainda assim ter o site acessível na internet:
 [ Vercel — frontend Next.js ]
      │  fetch para NEXT_PUBLIC_API_URL
      ▼
-[ Railway — backend FastAPI ] ──► [ Railway — Postgres (pgvector) ]
+[ Railway — backend FastAPI ] ──► [ Supabase — Postgres (pgvector) ]
      │        │                  └► [ Railway — Redis ]
      │        └────────────────────► [ Railway — Ollama (modelo local) ]
      ▼
 resposta em streaming (SSE)
 ```
 
+## 0. Banco de dados (Supabase) — já feito
+
+O projeto `orbit-ia` já está criado no Supabase com a extensão `vector` habilitada.
+As tabelas são criadas sozinhas pelo backend na primeira subida (`init_db()`).
+Falta só uma coisa que o Supabase não expõe por API por segurança: **a senha do banco**.
+
+1. Acesse supabase.com → projeto `orbit-ia` → **Settings → Database**
+2. Em "Connection string", copie a senha (ou clique em "Reset database password" se não souber a atual)
+3. Cole no lugar de `<SENHA_DO_BANCO>` em `DATABASE_URL` e `SYNC_DATABASE_URL` no `.env` do backend
+
 ## 1. Criar os serviços no Railway
 
-Crie um projeto novo no Railway e adicione 4 serviços:
+Crie um projeto novo no Railway e adicione 2 serviços (Postgres não entra mais aqui — já está no Supabase):
 
-### 1.1 Postgres (com pgvector)
-- "New Service" → "Empty Service" → "Deploy from Docker Image"
-- Imagem: `pgvector/pgvector:pg16`
-- Variáveis: `POSTGRES_USER=orbit`, `POSTGRES_PASSWORD=<gere uma senha forte>`, `POSTGRES_DB=orbit_ia`
-- Adicione um **Volume** apontando para `/var/lib/postgresql/data` (senão os dados somem a cada deploy)
-- Não precisa expor porta pública — o backend acessa pela rede interna do Railway
-
-### 1.2 Redis
+### 1.1 Redis
 - "New Service" → "Empty Service" → "Deploy from Docker Image"
 - Imagem: `redis:7-alpine`
 - Sem porta pública necessária
 
-### 1.3 Ollama (a IA local)
+### 1.2 Ollama (a IA local)
 - "New Service" → "Empty Service" → "Deploy from Docker Image"
 - Imagem: `ollama/ollama:latest`
 - Adicione um **Volume** em `/root/.ollama` (senão o modelo baixado some a cada deploy)
@@ -48,7 +52,7 @@ Crie um projeto novo no Railway e adicione 4 serviços:
   (troque pelo modelo que seu servidor aguenta — veja tabela de RAM abaixo)
 - Sem porta pública necessária (só o backend fala com ele)
 
-### 1.4 Backend (FastAPI)
+### 1.3 Backend (FastAPI)
 - "New Service" → "Deploy from GitHub repo" → selecione este repositório
 - Em **Settings → Root Directory**, coloque `backend`
 - O Railway detecta o `Dockerfile` e o `railway.toml` automaticamente
@@ -59,8 +63,8 @@ Crie um projeto novo no Railway e adicione 4 serviços:
   DEBUG=false
   JWT_SECRET_KEY=<gere com: openssl rand -hex 32>
 
-  DATABASE_URL=postgresql+asyncpg://orbit:<senha>@postgres.railway.internal:5432/orbit_ia
-  SYNC_DATABASE_URL=postgresql+psycopg2://orbit:<senha>@postgres.railway.internal:5432/orbit_ia
+  DATABASE_URL=postgresql+asyncpg://postgres.dnnbctrbiwcfadjfhwev:<SENHA_DO_BANCO>@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+  SYNC_DATABASE_URL=postgresql+psycopg2://postgres.dnnbctrbiwcfadjfhwev:<SENHA_DO_BANCO>@aws-0-us-east-1.pooler.supabase.com:6543/postgres
   REDIS_URL=redis://redis.railway.internal:6379/0
 
   AI_BASE_URL=http://ollama.railway.internal:11434/v1
@@ -70,8 +74,10 @@ Crie um projeto novo no Railway e adicione 4 serviços:
   CORS_ORIGINS=https://seu-projeto.vercel.app
   OAUTH_REDIRECT_BASE_URL=https://seu-backend.up.railway.app
   ```
-  Troque `postgres`, `redis`, `ollama` pelos nomes reais que você deu aos serviços
-  no Railway — o `.railway.internal` só funciona com o nome exato do serviço.
+  Troque `redis` e `ollama` pelos nomes reais que você deu aos serviços no
+  Railway — o `.railway.internal` só funciona com o nome exato do serviço.
+  A `DATABASE_URL` do Supabase acima já está com o projeto `orbit-ia` certo,
+  só falta trocar `<SENHA_DO_BANCO>`.
 
 ## 2. Deploy do frontend na Vercel
 
