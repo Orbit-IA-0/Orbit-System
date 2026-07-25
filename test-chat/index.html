@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Orbit IA — Teste de Chat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="orbit-bg"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="20" r="7" fill="url(#orbit-core)" />
+        <ellipse cx="20" cy="20" rx="18" ry="7" stroke="url(#orbit-ring)" stroke-width="2" fill="none" />
+        <ellipse cx="20" cy="20" rx="18" ry="7" stroke="url(#orbit-ring)" stroke-width="2" fill="none" transform="rotate(60 20 20)" />
+        <defs>
+          <linearGradient id="orbit-core" x1="0" y1="0" x2="1" y2="1">
+            <stop stop-color="#3b82f6" /><stop offset="1" stop-color="#8b5cf6" />
+          </linearGradient>
+          <linearGradient id="orbit-ring" x1="0" y1="0" x2="1" y2="1">
+            <stop stop-color="#8b5cf6" /><stop offset="1" stop-color="#3b82f6" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <span class="brand-name">Orbit <em>IA</em></span>
+      <span class="brand-tag">ambiente de teste</span>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab-btn active" data-tab="overview" role="tab">Início</button>
+      <button class="tab-btn" data-tab="chat" role="tab">Chat IA</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ABA: INÍCIO -->
+    <section id="tab-overview" class="tab-panel active">
+      <div class="panel-card">
+        <span class="eyebrow">passo 1</span>
+        <h1>Teste seu cérebro de IA sem subir o stack todo</h1>
+        <p class="lede">
+          Esta página fala direto com qualquer API compatível com OpenAI
+          (o mesmo formato que o <code>ai_client.py</code> do backend usa) —
+          sem precisar do Docker, Postgres ou FastAPI rodando.
+        </p>
+        <div class="steps">
+          <div class="step">
+            <span class="step-n">01</span>
+            <div>
+              <h3>Escolha um provedor</h3>
+              <p>Groq, OpenRouter, Together, OpenAI, ou seu Ollama local — qualquer endpoint <code>/v1/chat/completions</code>.</p>
+            </div>
+          </div>
+          <div class="step">
+            <span class="step-n">02</span>
+            <div>
+              <h3>Cole a URL base e a chave</h3>
+              <p>Ficam salvas só no seu navegador (localStorage), nunca são enviadas a mim.</p>
+            </div>
+          </div>
+          <div class="step">
+            <span class="step-n">03</span>
+            <div>
+              <h3>Abra a aba "Chat IA"</h3>
+              <p>Converse e veja a resposta chegar em streaming, igual ao produto final.</p>
+            </div>
+          </div>
+        </div>
+        <button class="cta" data-goto="chat">Ir para o Chat IA →</button>
+      </div>
+    </section>
+
+    <!-- ABA: CHAT IA -->
+    <section id="tab-chat" class="tab-panel">
+      <div class="chat-layout">
+        <aside class="config-panel">
+          <h2>Configuração</h2>
+          <label>URL base da API
+            <input id="cfg-base-url" type="text" placeholder="https://api.groq.com/openai/v1" />
+          </label>
+          <label>Chave de API
+            <input id="cfg-api-key" type="password" placeholder="sk-..." />
+          </label>
+          <label>Modelo
+            <input id="cfg-model" type="text" placeholder="llama-3.3-70b-versatile" />
+          </label>
+          <label class="switch-row">
+            <span>Streaming</span>
+            <input id="cfg-stream" type="checkbox" checked />
+          </label>
+          <button id="btn-save-cfg" class="cta ghost">Salvar configuração</button>
+          <p class="hint" id="cfg-status">Nada salvo ainda.</p>
+        </aside>
+
+        <div class="chat-window">
+          <div id="messages" class="messages">
+            <div class="msg msg-ai">
+              <div class="bubble">Oi! Configure sua API ao lado e mande uma mensagem para testar o modelo. 🚀</div>
+            </div>
+          </div>
+          <form id="chat-form" class="chat-input-row">
+            <textarea id="chat-input" placeholder="Digite sua mensagem..." rows="1"></textarea>
+            <button type="submit" id="chat-send">Enviar</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+# --- Segredos ---
+.env
+backend/.env
+frontend/.env
+frontend/.env.local
+
+# --- Node / Next.js ---
+node_modules/
+.next/
+out/
+.vercel/
+npm-debug.log*
+
+# --- Python / FastAPI ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# --- Uploads locais ---
+backend/uploads/
+
+# --- SO / editor ---
+.DS_Store
+.vscode/
+.idea/

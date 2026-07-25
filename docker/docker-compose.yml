@@ -1,0 +1,81 @@
+version: "3.9"
+
+# Orbit IA — orquestracao completa (banco, cache, backend, frontend e IA local).
+# Subir tudo com: docker compose -f docker/docker-compose.yml up --build
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: orbit_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: orbit
+      POSTGRES_PASSWORD: orbit
+      POSTGRES_DB: orbit_ia
+    volumes:
+      - orbit_postgres_data:/var/lib/postgresql/data
+      - ../database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orbit -d orbit_ia"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: orbit_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  # Servidor de modelo open-source local (Llama 3 / Mistral / Qwen2.5).
+  # Alternativa: comente este servico e aponte AI_BASE_URL/AI_API_KEY do backend
+  # para qualquer API compativel OpenAI (ex.: https://api.openai.com/v1).
+  ollama:
+    image: ollama/ollama:latest
+    container_name: orbit_ollama
+    restart: unless-stopped
+    volumes:
+      - orbit_ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: orbit_backend
+    restart: unless-stopped
+    env_file:
+      - ../backend/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://orbit:orbit@postgres:5432/orbit_ia
+      SYNC_DATABASE_URL: postgresql+psycopg2://orbit:orbit@postgres:5432/orbit_ia
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - orbit_uploads:/app/uploads
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: orbit_frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+
+volumes:
+  orbit_postgres_data:
+  orbit_ollama_data:
+  orbit_uploads:

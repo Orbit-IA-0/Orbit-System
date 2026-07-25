@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --orbit-bg: 5 6 10;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-orbit-black text-slate-100 font-body antialiased;
+  }
+
+  ::selection {
+    @apply bg-orbit-purple/40;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-orbit-border rounded-full;
+  }
+
+  :focus-visible {
+    outline: 2px solid #8b5cf6;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-orbit-panel/60 backdrop-blur-xl border border-orbit-border/80 rounded-2xl;
+  }
+
+  .orbit-btn-primary {
+    @apply bg-orbit-accent text-white font-medium rounded-xl px-4 py-2.5
+           hover:opacity-90 active:opacity-80 transition-opacity
+           disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .orbit-btn-ghost {
+    @apply bg-transparent border border-orbit-border rounded-xl px-4 py-2.5
+           text-slate-200 hover:bg-white/5 transition-colors;
+  }
+
+  .orbit-input {
+    @apply bg-orbit-surface border border-orbit-border rounded-xl px-4 py-2.5
+           text-slate-100 placeholder:text-slate-500
+           focus:border-orbit-purple/70 transition-colors outline-none;
+  }
+}
+
+/* Tema claro: sobrescreve os tons de fundo/texto mantendo a identidade azul/roxo */
+.light body {
+  @apply bg-slate-50 text-slate-900;
+}
+.light .glass-panel {
+  @apply bg-white/70 border-slate-200;
+}
+.light .orbit-input {
+  @apply bg-white border-slate-200 text-slate-900 placeholder:text-slate-400;
+}
+.light .orbit-btn-ghost {
+  @apply border-slate-200 text-slate-700 hover:bg-slate-100;
+}
