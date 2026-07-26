@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { setTokens } from "@/lib/api";
 
-export default function OAuthCallback() {
+function OAuthCallbackInner() {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -23,5 +23,19 @@ export default function OAuthCallback() {
     <div className="flex h-screen items-center justify-center bg-orbit-gradient text-slate-400">
       Concluindo login...
     </div>
+  );
+}
+
+export default function OAuthCallback() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center bg-orbit-gradient text-slate-400">
+          Concluindo login...
+        </div>
+      }
+    >
+      <OAuthCallbackInner />
+    </Suspense>
   );
 }
